@@ -66,7 +66,7 @@ render_bar() {
     for (( i=0; i<empty; i++ )); do bar_off+=" "; done
 
     local icon="${ICONS[$agent]}"
-    printf "#[fg=%s,bold]%s %3d%%#[nobold,fg=colour240]|#[fg=%s]%s%s#[fg=colour240]%s|#[default]" \
+    printf "#[fg=%s,bold]%s%3d%%#[nobold,fg=colour240]|#[fg=%s]%s%s#[fg=colour240]%s|#[default]" \
         "$color" "$icon" "$pct" "$color" "$bar_on" "$partial" "$bar_off"
 }
 
