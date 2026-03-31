@@ -14,6 +14,7 @@ When working in this repo, document any major concepts you introduce or discover
 ### What it owns
 
 - `claude-usage.tmux` - plugin entrypoint. Replaces `#{claude_usage}`, `#{codex_usage}`, and `#{agent_usage}` in `status-right`/`status-left` with `#(scripts/agent_usage.sh <agent>)` calls.
+- `claude-usage.tmux` also raises `status-right-length` / `status-left-length` when a usage placeholder is present, so adjacent text like the clock does not get clipped.
 - `scripts/agent_usage.sh` - renders the progress bar. Accepts `claude`, `codex`, or no argument (renders both side by side).
 
 ### How the bar works

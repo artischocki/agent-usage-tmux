@@ -21,6 +21,7 @@ get_percentage() {
 render_bar() {
     local pct="$1"
     local width=15
+    local empty_bg="colour236"
     local sub_chars=('▏' '▎' '▍' '▌' '▋' '▊' '▉')  # 1/8 … 7/8
 
     (( pct < 0 )) && pct=0
@@ -54,8 +55,8 @@ render_bar() {
     local bar_off=""
     for (( i=0; i<empty; i++ )); do bar_off+=" "; done
 
-    printf "#[fg=%s,bold]%3d%%#[nobold,fg=colour240]|#[fg=%s]%s%s#[fg=colour240]%s|#[default]" \
-        "$color" "$pct" "$color" "$bar_on" "$partial" "$bar_off"
+    printf "#[fg=%s,bold]%3d%%#[nobold,fg=colour240]|#[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[fg=colour240,bg=default]|#[default]" \
+        "$color" "$pct" "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off"
 }
 
 pct=$(get_percentage)

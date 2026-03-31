@@ -33,7 +33,8 @@ get_percentage() {
 render_bar() {
     local agent="$1"
     local pct="$2"
-    local width=10
+    local width=6
+    local empty_bg="colour236"
     local sub_chars=('▏' '▎' '▍' '▌' '▋' '▊' '▉')
 
     (( pct < 0 )) && pct=0
@@ -72,8 +73,8 @@ render_bar() {
     for (( i=0; i<empty; i++ )); do bar_off+=" "; done
 
     local icon="${ICONS[$agent]}"
-    printf "#[fg=%s,bold]%s%3d%%#[nobold,fg=colour240]|#[fg=%s]%s%s#[fg=colour240]%s|#[default]" \
-        "$color" "$icon" "$pct" "$color" "$bar_on" "$partial" "$bar_off"
+    printf "#[fg=%s,bold]%s%3d%%#[nobold,fg=colour240]|#[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[fg=colour240,bg=default]|#[default]" \
+        "$color" "$icon" "$pct" "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off"
 }
 
 render_agent() {
