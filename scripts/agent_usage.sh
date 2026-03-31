@@ -41,10 +41,15 @@ render_bar() {
     }')"
 
     local color
-    if   (( pct >= 80 )); then color="colour160"
-    elif (( pct >= 50 )); then color="colour214"
-    else                       color="colour71"
-    fi
+    case "$agent" in
+        claude) color="colour214" ;;  # orange
+        codex)  color="colour255" ;;  # white
+        *)
+            if   (( pct >= 80 )); then color="colour160"
+            elif (( pct >= 50 )); then color="colour214"
+            else                       color="colour71"
+            fi ;;
+    esac
 
     local bar_on=""
     for (( i=0; i<full; i++ )); do bar_on+="█"; done
