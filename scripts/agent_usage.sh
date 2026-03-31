@@ -16,6 +16,11 @@ declare -A DEFAULTS=(
     [codex]="python3 $SCRIPT_DIR/fetch_codex_usage.py"
 )
 
+declare -A DEFAULT_RESETS=(
+    [claude]="python3 $SCRIPT_DIR/fetch_claude_usage.py --field reset_in"
+    [codex]="python3 $SCRIPT_DIR/fetch_codex_usage.py --field reset_in"
+)
+
 get_percentage() {
     local agent="$1"
     local cmd
@@ -30,9 +35,33 @@ get_percentage() {
     eval "$cmd" 2>/dev/null || echo "0"
 }
 
+get_reset_in() {
+    local agent="$1"
+    local cmd
+    cmd="$(tmux show-option -gqv "@agent_usage_reset_cmd_${agent}" 2>/dev/null)"
+    if [[ -z "$cmd" ]]; then
+        [[ "$agent" == "claude" ]] && cmd="$(tmux show-option -gqv @agent_usage_reset_cmd 2>/dev/null)"
+    fi
+    if [[ -z "$cmd" ]]; then
+        cmd="${DEFAULT_RESETS[$agent]}"
+    fi
+    eval "$cmd" 2>/dev/null || echo "0"
+}
+
+format_reset() {
+    local reset_in="$1"
+    local hours minutes
+
+    [[ "$reset_in" =~ ^[0-9]+$ ]] || reset_in=0
+    hours=$(( reset_in / 3600 ))
+    minutes=$(( (reset_in % 3600) / 60 ))
+    printf "%02d:%02d" "$hours" "$minutes"
+}
+
 render_bar() {
     local agent="$1"
     local pct="$2"
+    local reset_label="$3"
     local width=6
     local empty_bg="colour236"
     local sub_chars=('▏' '▎' '▍' '▌' '▋' '▊' '▉')
@@ -73,15 +102,19 @@ render_bar() {
     for (( i=0; i<empty; i++ )); do bar_off+=" "; done
 
     local icon="${ICONS[$agent]}"
-    printf "#[fg=%s,bold]%s%3d%%#[nobold,fg=colour240]|#[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[fg=colour240,bg=default]|#[default]" \
-        "$color" "$icon" "$pct" "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off"
+    printf "#[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[default] #[fg=%s,bold]%s %d%%, %s#[default]" \
+        "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off" "$color" "$icon" "$pct" "$reset_label"
 }
 
 render_agent() {
     local agent="$1"
     local pct
+    local reset_in
+    local reset_label
     pct=$(get_percentage "$agent")
-    render_bar "$agent" "$pct"
+    reset_in=$(get_reset_in "$agent")
+    reset_label=$(format_reset "$reset_in")
+    render_bar "$agent" "$pct" "$reset_label"
 }
 
 case "$AGENT" in

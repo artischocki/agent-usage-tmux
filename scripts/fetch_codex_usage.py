@@ -10,6 +10,7 @@ written to stdout as a plain integer (0-100).
 import argparse
 import json
 from pathlib import Path
+import time
 from urllib.error import HTTPError, URLError
 from urllib.request import ProxyHandler, Request, build_opener, urlopen
 
@@ -47,6 +48,15 @@ def parse_args() -> argparse.Namespace:
         "--raw",
         action="store_true",
         help="Print raw JSON response instead of a single percentage.",
+    )
+    parser.add_argument(
+        "--field",
+        choices=["percent", "reset_at", "reset_in"],
+        default="percent",
+        help=(
+            "Which value to print: remaining percentage, reset epoch time, "
+            "or seconds until reset (default: percent)"
+        ),
     )
     parser.add_argument(
         "--window",
@@ -112,22 +122,39 @@ def fetch_usage(
         raise SystemExit(f"failed to parse response JSON: {exc}")
 
 
-def parse_utilisation(payload: dict, window: str) -> int:
+def parse_utilisation(payload: dict, window: str) -> tuple[int, int, int]:
     rate_limit = payload.get("rate_limit") or {}
     window_data = rate_limit.get(f"{window}_window") or {}
     used_percent = window_data.get("used_percent")
+    reset_at = window_data.get("reset_at")
+    reset_after_seconds = window_data.get("reset_after_seconds")
 
     if used_percent is None:
         raise SystemExit(
             f"used_percent not found in rate_limit.{window}_window"
         )
+    if reset_at is None:
+        raise SystemExit(
+            f"reset_at not found in rate_limit.{window}_window"
+        )
+    if reset_after_seconds is None:
+        raise SystemExit(
+            f"reset_after_seconds not found in rate_limit.{window}_window"
+        )
 
     try:
         pct = max(0, min(100, 100 - round(float(used_percent))))
+        reset_at = int(reset_at)
+        reset_in = max(0, int(reset_after_seconds))
     except (TypeError, ValueError):
-        raise SystemExit(f"could not parse used_percent value: {used_percent!r}")
+        raise SystemExit(
+            "could not parse rate-limit fields: "
+            f"used_percent={used_percent!r}, "
+            f"reset_at={reset_at!r}, "
+            f"reset_after_seconds={reset_after_seconds!r}"
+        )
 
-    return pct
+    return pct, reset_at, reset_in
 
 
 def main() -> None:
@@ -142,8 +169,14 @@ def main() -> None:
         print()
         return
 
-    pct = parse_utilisation(payload, args.window)
-    print(pct)
+    pct, reset_at, reset_in = parse_utilisation(payload, args.window)
+
+    if args.field == "percent":
+        print(pct)
+    elif args.field == "reset_at":
+        print(reset_at)
+    else:
+        print(max(0, min(reset_in, reset_at - int(time.time()) + 1)))
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DEFAULT_CMD="python3 ${CURRENT_DIR}/fetch_claude_usage.py"
+DEFAULT_RESET_CMD="python3 ${CURRENT_DIR}/fetch_claude_usage.py --field reset_in"
 
 # Returns a usage percentage (0-100).
 # Override the data source by setting @claude_usage_cmd in tmux.conf.
@@ -18,8 +19,29 @@ get_percentage() {
     fi
 }
 
+get_reset_in() {
+    local cmd
+    cmd="$(tmux show-option -gqv @claude_usage_reset_cmd 2>/dev/null)"
+    if [[ -n "$cmd" ]]; then
+        eval "$cmd" 2>/dev/null
+    else
+        eval "$DEFAULT_RESET_CMD" 2>/dev/null
+    fi
+}
+
+format_reset() {
+    local reset_in="$1"
+    local hours minutes
+
+    [[ "$reset_in" =~ ^[0-9]+$ ]] || reset_in=0
+    hours=$(( reset_in / 3600 ))
+    minutes=$(( (reset_in % 3600) / 60 ))
+    printf "%02d:%02d" "$hours" "$minutes"
+}
+
 render_bar() {
     local pct="$1"
+    local reset_label="$2"
     local width=15
     local empty_bg="colour236"
     local sub_chars=('▏' '▎' '▍' '▌' '▋' '▊' '▉')  # 1/8 … 7/8
@@ -55,9 +77,11 @@ render_bar() {
     local bar_off=""
     for (( i=0; i<empty; i++ )); do bar_off+=" "; done
 
-    printf "#[fg=%s,bold]%3d%%#[nobold,fg=colour240]|#[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[fg=colour240,bg=default]|#[default]" \
-        "$color" "$pct" "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off"
+    printf "#[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[default] #[fg=%s,bold]%3d%%, %s#[default]" \
+        "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off" "$color" "$pct" "$reset_label"
 }
 
 pct=$(get_percentage)
-render_bar "$pct"
+reset_in=$(get_reset_in)
+reset_label=$(format_reset "$reset_in")
+render_bar "$pct" "$reset_label"

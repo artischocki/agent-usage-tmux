@@ -10,6 +10,7 @@ written to stdout as a plain integer (0-100).
 import argparse
 import json
 from pathlib import Path
+import time
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -42,6 +43,15 @@ def parse_args() -> argparse.Namespace:
         "--raw",
         action="store_true",
         help="Print raw rate-limit header values instead of a single percentage.",
+    )
+    parser.add_argument(
+        "--field",
+        choices=["percent", "reset_at", "reset_in"],
+        default="percent",
+        help=(
+            "Which value to print: remaining percentage, reset epoch time, "
+            "or seconds until reset (default: percent)"
+        ),
     )
     parser.add_argument(
         "--window",
@@ -105,6 +115,9 @@ def fetch_rate_limit_headers(
         with urlopen(request, timeout=timeout) as response:
             headers = {k.lower(): v for k, v in response.getheaders()}
     except HTTPError as exc:
+        headers = {k.lower(): v for k, v in exc.headers.items()}
+        if any(k.startswith("anthropic-ratelimit-unified") for k in headers):
+            return headers
         body_text = exc.read().decode("utf-8", errors="replace")
         raise SystemExit(f"HTTP {exc.code}: {body_text}")
     except URLError as exc:
@@ -113,35 +126,51 @@ def fetch_rate_limit_headers(
     return headers
 
 
-def parse_utilisation(headers: dict, window: str) -> tuple[int, dict]:
+def select_window(headers: dict, window: str) -> str:
+    representative = headers.get(
+        "anthropic-ratelimit-unified-representative-claim",
+        "five_hour",
+    )
+
+    if window == "auto":
+        return "5h" if representative == "five_hour" else "7d"
+    return window
+
+
+def parse_utilisation(headers: dict, window: str) -> tuple[int, int, dict]:
     raw = {
         k: v
         for k, v in headers.items()
         if k.startswith("anthropic-ratelimit-unified")
     }
 
-    representative = headers.get("anthropic-ratelimit-unified-representative-claim", "five_hour")
-
-    if window == "auto":
-        window_key = "5h" if representative == "five_hour" else "7d"
-    else:
-        window_key = window
+    window_key = select_window(headers, window)
 
     util_key = f"anthropic-ratelimit-unified-{window_key}-utilization"
     util_str = headers.get(util_key)
+    reset_key = f"anthropic-ratelimit-unified-{window_key}-reset"
+    reset_str = headers.get(reset_key)
 
     if util_str is None:
         raise SystemExit(
             f"rate-limit utilisation header '{util_key}' not found in response"
+        )
+    if reset_str is None:
+        raise SystemExit(
+            f"rate-limit reset header '{reset_key}' not found in response"
         )
 
     try:
         util_float = float(util_str)
     except ValueError:
         raise SystemExit(f"could not parse utilisation value: {util_str!r}")
+    try:
+        reset_at = int(reset_str)
+    except ValueError:
+        raise SystemExit(f"could not parse reset value: {reset_str!r}")
 
     pct = max(0, min(100, 100 - round(util_float * 100)))
-    return pct, raw
+    return pct, reset_at, raw
 
 
 def main() -> None:
@@ -150,14 +179,19 @@ def main() -> None:
 
     access_token = load_credentials(credentials_path)
     headers = fetch_rate_limit_headers(args.url, access_token, args.timeout)
-    pct, raw = parse_utilisation(headers, args.window)
+    pct, reset_at, raw = parse_utilisation(headers, args.window)
 
     if args.raw:
         for k, v in sorted(raw.items()):
             print(f"{k}: {v}")
         return
 
-    print(pct)
+    if args.field == "percent":
+        print(pct)
+    elif args.field == "reset_at":
+        print(reset_at)
+    else:
+        print(max(0, reset_at - int(time.time())))
 
 
 if __name__ == "__main__":

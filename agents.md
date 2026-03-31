@@ -19,7 +19,7 @@ When working in this repo, document any major concepts you introduce or discover
 
 ### How the bar works
 
-- tqdm-style: `✻ 42%|████▍     |` - `█` for filled, spaces for empty, `|` as borders
+- tqdm-style: `████▍      ✻ 42%, 03:02` - `█` for filled, spaces for empty, with a dim background on the unfilled portion
 - Sub-character precision using `▏▎▍▌▋▊▉` (1/8-cell steps via awk float math)
 - Claude: orange (`colour214`), icon `✻`
 - Codex: white (`colour255`), icon `>_`
@@ -29,7 +29,10 @@ When working in this repo, document any major concepts you introduce or discover
 The script reads a tmux option per agent:
 - `@agent_usage_cmd_claude` - shell command that prints 0-100
 - `@agent_usage_cmd_codex` - shell command that prints 0-100
+- `@agent_usage_reset_cmd_claude` - shell command that prints seconds until reset
+- `@agent_usage_reset_cmd_codex` - shell command that prints seconds until reset
 - Falls back to `@agent_usage_cmd` (legacy) for claude if the above is unset
+- Falls back to `@agent_usage_reset_cmd` (legacy) for claude if the above is unset
 
 The frontend does **not** implement data fetching. Leave `scripts/fetch_*.py` and `scripts/claude_usage.sh` to the backend agent.
 
@@ -57,7 +60,7 @@ The backend consists of two Python scripts that fetch rate-limit utilisation fro
 
 In `auto` mode (default), the script uses the representative claim to pick the right window. The fraction is subtracted from 1 and multiplied by 100 to get remaining percentage.
 
-**Options:** `--window 5h|7d|auto`, `--raw` (print all rate-limit headers), `--timeout`, `--credentials-file`
+**Options:** `--window 5h|7d|auto`, `--field percent|reset_at|reset_in`, `--raw` (print all rate-limit headers), `--timeout`, `--credentials-file`
 
 ### `scripts/fetch_codex_usage.py`
 
@@ -65,7 +68,7 @@ In `auto` mode (default), the script uses the representative claim to pick the r
 
 **How usage is fetched:** Hits a dedicated endpoint - `https://chatgpt.com/backend-api/wham/usage` - which returns a JSON body with `rate_limit.primary_window.used_percent` (5-hour window) and `rate_limit.secondary_window.used_percent` (7-day window). The `used_percent` value is subtracted from 100 to get remaining percentage.
 
-**Options:** `--window primary|secondary`, `--raw` (print full JSON), `--timeout`, `--proxy-url`, `--auth-file`
+**Options:** `--window primary|secondary`, `--field percent|reset_at|reset_in`, `--raw` (print full JSON), `--timeout`, `--proxy-url`, `--auth-file`
 
 ### Tmux integration
 
