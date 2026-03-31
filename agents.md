@@ -19,7 +19,7 @@ When working in this repo, document any major concepts you introduce or discover
 
 ### How the bar works
 
-- tqdm-style: `████▍      ✻ 42%, 03:02` - `█` for filled, spaces for empty, with a dim background on the unfilled portion
+- tqdm-style: `✻ 42% ████▍      03:02` - `█` for filled, spaces for empty, with a dim background on the unfilled portion
 - Sub-character precision using `▏▎▍▌▋▊▉` (1/8-cell steps via awk float math)
 - Claude: orange (`colour214`), icon `✻`
 - Codex: white (`colour255`), icon `>_`

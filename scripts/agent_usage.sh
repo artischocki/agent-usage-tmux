@@ -102,8 +102,8 @@ render_bar() {
     for (( i=0; i<empty; i++ )); do bar_off+=" "; done
 
     local icon="${ICONS[$agent]}"
-    printf "#[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[default] #[fg=%s,bold]%s %d%%, %s#[default]" \
-        "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off" "$color" "$icon" "$pct" "$reset_label"
+    printf "#[fg=%s,bold]%s %d%%#[default] #[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[default] #[fg=%s,bold]%s#[default]" \
+        "$color" "$icon" "$pct" "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off" "$color" "$reset_label"
 }
 
 render_agent() {

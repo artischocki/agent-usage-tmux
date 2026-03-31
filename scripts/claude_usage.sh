@@ -77,8 +77,8 @@ render_bar() {
     local bar_off=""
     for (( i=0; i<empty; i++ )); do bar_off+=" "; done
 
-    printf "#[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[default] #[fg=%s,bold]%3d%%, %s#[default]" \
-        "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off" "$color" "$pct" "$reset_label"
+    printf "#[fg=%s,bold]%d%%#[default] #[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[default] #[fg=%s,bold]%s#[default]" \
+        "$color" "$pct" "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off" "$color" "$reset_label"
 }
 
 pct=$(get_percentage)
