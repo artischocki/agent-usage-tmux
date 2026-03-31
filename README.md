@@ -2,9 +2,7 @@
 
 Tmux status bar plugin for showing Claude and Codex usage as compact progress bars.
 
-![Plugin preview](docs/preview.svg)
-
-Replace `docs/preview.svg` with a real screenshot later if you want.
+![Plugin preview](docs/preview.png)
 
 ## Install
 
@@ -26,8 +24,7 @@ Then reload tmux or install plugins with TPM.
 Current format:
 
 ```text
-✻ 42% ████▍      03:02
->_ 88% █████▎    00:44
+✻ 42% ████▍  03:02, >_ 88% █████▎ 00:44
 ```
 
 ## Configuration
