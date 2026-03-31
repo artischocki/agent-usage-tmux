@@ -15,27 +15,28 @@ get_percentage() {
 
 render_bar() {
     local pct="$1"
-    local width=10
+    local width=8
 
-    # clamp
     (( pct < 0 )) && pct=0
     (( pct > 100 )) && pct=100
 
     local filled=$(( pct * width / 100 ))
     local empty=$(( width - filled ))
 
-    local bar=""
-    for (( i=0; i<filled; i++ ));  do bar+="█"; done
-    for (( i=0; i<empty;  i++ ));  do bar+="░"; done
-
-    # color: green <50, yellow <80, red >=80
+    # 256-color: muted green / amber / red
     local color
-    if   (( pct >= 80 )); then color="red"
-    elif (( pct >= 50 )); then color="yellow"
-    else                       color="green"
+    if   (( pct >= 80 )); then color="colour160"
+    elif (( pct >= 50 )); then color="colour214"
+    else                       color="colour71"
     fi
 
-    printf "#[fg=%s][%s] %d%%#[default]" "$color" "$bar" "$pct"
+    local bar_on="" bar_off=""
+    for (( i=0; i<filled; i++ )); do bar_on+="▓"; done
+    for (( i=0; i<empty;  i++ )); do bar_off+="░"; done
+
+    # bold percentage, coloured filled, dim empty
+    printf "#[fg=%s,bold]%3d%%#[nobold] #[fg=%s]%s#[fg=colour238]%s#[default]" \
+        "$color" "$pct" "$color" "$bar_on" "$bar_off"
 }
 
 pct=$(get_percentage)
