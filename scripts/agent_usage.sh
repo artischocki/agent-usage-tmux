@@ -16,12 +16,18 @@ get_percentage() {
 render_bar() {
     local pct="$1"
     local width=15
+    local sub_chars=('▏' '▎' '▍' '▌' '▋' '▊' '▉')  # 1/8 … 7/8
 
     (( pct < 0 )) && pct=0
     (( pct > 100 )) && pct=100
 
-    local filled=$(( pct * width / 100 ))
-    local empty=$(( width - filled ))
+    # floating-point split: full cells + fractional remainder index (0-7)
+    read -r full partial_idx <<< "$(awk -v p="$pct" -v w="$width" 'BEGIN {
+        filled = p * w / 100
+        full   = int(filled)
+        idx    = int((filled - full) * 8)
+        print full, idx
+    }')"
 
     local color
     if   (( pct >= 80 )); then color="colour160"
@@ -29,13 +35,22 @@ render_bar() {
     else                       color="colour71"
     fi
 
-    local bar_on="" bar_off=""
-    for (( i=0; i<filled; i++ )); do bar_on+="█"; done
-    for (( i=0; i<empty;  i++ )); do bar_off+=" "; done
+    local bar_on=""
+    for (( i=0; i<full; i++ )); do bar_on+="█"; done
 
-    # tqdm style:  42%|████████       |
-    printf "#[fg=%s,bold]%3d%%#[nobold,fg=colour240]|#[fg=%s]%s#[fg=colour240]%s|#[default]" \
-        "$color" "$pct" "$color" "$bar_on" "$bar_off"
+    local partial="" empty
+    if (( partial_idx > 0 )); then
+        partial="${sub_chars[$(( partial_idx - 1 ))]}"
+        empty=$(( width - full - 1 ))
+    else
+        empty=$(( width - full ))
+    fi
+
+    local bar_off=""
+    for (( i=0; i<empty; i++ )); do bar_off+=" "; done
+
+    printf "#[fg=%s,bold]%3d%%#[nobold,fg=colour240]|#[fg=%s]%s%s#[fg=colour240]%s|#[default]" \
+        "$color" "$pct" "$color" "$bar_on" "$partial" "$bar_off"
 }
 
 pct=$(get_percentage)
