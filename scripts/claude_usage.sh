@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-DEFAULT_CMD="python3 ${CURRENT_DIR}/fetch_agent_usage.py"
+DEFAULT_CMD="python3 ${CURRENT_DIR}/fetch_claude_usage.py"
 
 # Returns a usage percentage (0-100).
-# Override the data source by setting @agent_usage_cmd in tmux.conf.
-# Default: fetch_agent_usage.py reads the Claude OAuth token and queries the
+# Override the data source by setting @claude_usage_cmd in tmux.conf.
+# Default: fetch_claude_usage.py reads the Claude OAuth token and queries the
 # Anthropic API, caching the result for 5 minutes.
-# Example override: set -g @agent_usage_cmd "cat ~/.claude/usage_percent"
+# Example override: set -g @claude_usage_cmd "cat ~/.claude/usage_percent"
 get_percentage() {
     local cmd
-    cmd="$(tmux show-option -gqv @agent_usage_cmd 2>/dev/null)"
+    cmd="$(tmux show-option -gqv @claude_usage_cmd 2>/dev/null)"
     if [[ -n "$cmd" ]]; then
         eval "$cmd" 2>/dev/null
     else

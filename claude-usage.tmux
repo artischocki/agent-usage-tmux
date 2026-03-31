@@ -4,8 +4,8 @@ CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 do_interpolation() {
     local string="$1"
-    local replace="#($CURRENT_DIR/scripts/agent_usage.sh)"
-    echo "${string/\#\{agent_usage\}/$replace}"
+    local replace="#($CURRENT_DIR/scripts/claude_usage.sh)"
+    echo "${string/\#\{claude_usage\}/$replace}"
 }
 
 update_tmux_option() {

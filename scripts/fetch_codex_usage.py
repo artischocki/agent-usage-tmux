@@ -89,7 +89,7 @@ def fetch_usage(
         headers={
             "Authorization": f"Bearer {access_token}",
             "ChatGPT-Account-Id": account_id,
-            "User-Agent": "agent-usage-tmux/1.0",
+            "User-Agent": "claude-usage-tmux/1.0",
             "Accept": "application/json",
         },
         method="GET",
