@@ -5,24 +5,17 @@ Fetch Claude Code rate-limit utilisation from the Anthropic messages API.
 Auth is read from ~/.claude/.credentials.json (claudeAiOauth.accessToken).
 The utilisation percentage for the representative rate-limit window is
 written to stdout as a plain integer (0-100).
-
-A cache file (~/.claude/usage_cache.json) is maintained so the API is only
-hit when the cached value is older than --ttl seconds (default 300).
 """
 
 import argparse
 import json
-import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
 DEFAULT_CREDENTIALS_PATH = Path.home() / ".claude" / ".credentials.json"
-DEFAULT_CACHE_PATH = Path.home() / ".claude" / "usage_cache.json"
 DEFAULT_MESSAGES_URL = "https://api.anthropic.com/v1/messages"
-DEFAULT_TTL = 300  # seconds
 
 
 def parse_args() -> argparse.Namespace:
@@ -33,17 +26,6 @@ def parse_args() -> argparse.Namespace:
         "--credentials-file",
         default=str(DEFAULT_CREDENTIALS_PATH),
         help=f"Path to Claude credentials JSON (default: {DEFAULT_CREDENTIALS_PATH})",
-    )
-    parser.add_argument(
-        "--cache-file",
-        default=str(DEFAULT_CACHE_PATH),
-        help=f"Path to usage cache JSON (default: {DEFAULT_CACHE_PATH})",
-    )
-    parser.add_argument(
-        "--ttl",
-        type=int,
-        default=DEFAULT_TTL,
-        help=f"Cache TTL in seconds (default: {DEFAULT_TTL})",
     )
     parser.add_argument(
         "--url",
@@ -90,20 +72,6 @@ def load_credentials(credentials_path: Path) -> str:
     return access_token
 
 
-def load_cache(cache_path: Path) -> dict | None:
-    try:
-        return json.loads(cache_path.read_text())
-    except (FileNotFoundError, json.JSONDecodeError):
-        return None
-
-
-def save_cache(cache_path: Path, data: dict) -> None:
-    try:
-        cache_path.write_text(json.dumps(data))
-    except OSError:
-        pass  # cache write failure is non-fatal
-
-
 def fetch_rate_limit_headers(
     url: str,
     access_token: str,
@@ -146,10 +114,6 @@ def fetch_rate_limit_headers(
 
 
 def parse_utilisation(headers: dict, window: str) -> tuple[int, dict]:
-    """
-    Extract utilisation percentage from rate-limit headers.
-    Returns (percentage_0_to_100, raw_dict).
-    """
     raw = {
         k: v
         for k, v in headers.items()
@@ -158,7 +122,6 @@ def parse_utilisation(headers: dict, window: str) -> tuple[int, dict]:
 
     representative = headers.get("anthropic-ratelimit-unified-representative-claim", "five_hour")
 
-    # Map window arg to header infix
     if window == "auto":
         window_key = "5h" if representative == "five_hour" else "7d"
     else:
@@ -184,20 +147,6 @@ def parse_utilisation(headers: dict, window: str) -> tuple[int, dict]:
 def main() -> None:
     args = parse_args()
     credentials_path = Path(args.credentials_file).expanduser()
-    cache_path = Path(args.cache_file).expanduser()
-
-    # Try cache first
-    now = datetime.now(tz=timezone.utc).timestamp()
-    cached = load_cache(cache_path)
-    if (
-        not args.raw
-        and cached
-        and isinstance(cached.get("pct"), int)
-        and isinstance(cached.get("ts"), (int, float))
-        and (now - cached["ts"]) < args.ttl
-    ):
-        print(cached["pct"])
-        return
 
     access_token = load_credentials(credentials_path)
     headers = fetch_rate_limit_headers(args.url, access_token, args.timeout)
@@ -208,7 +157,6 @@ def main() -> None:
             print(f"{k}: {v}")
         return
 
-    save_cache(cache_path, {"pct": pct, "ts": now})
     print(pct)
 
 
