@@ -123,7 +123,7 @@ def parse_utilisation(payload: dict, window: str) -> int:
         )
 
     try:
-        pct = max(0, min(100, round(float(used_percent))))
+        pct = max(0, min(100, 100 - round(float(used_percent))))
     except (TypeError, ValueError):
         raise SystemExit(f"could not parse used_percent value: {used_percent!r}")
 

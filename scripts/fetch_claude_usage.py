@@ -140,7 +140,7 @@ def parse_utilisation(headers: dict, window: str) -> tuple[int, dict]:
     except ValueError:
         raise SystemExit(f"could not parse utilisation value: {util_str!r}")
 
-    pct = max(0, min(100, round(util_float * 100)))
+    pct = max(0, min(100, 100 - round(util_float * 100)))
     return pct, raw
 
 
