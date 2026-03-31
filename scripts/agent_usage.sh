@@ -5,7 +5,7 @@
 AGENT="${1:-}"
 
 declare -A ICONS=(
-    [claude]="✦"
+    [claude]="✻"
     [codex]=">_"
 )
 
