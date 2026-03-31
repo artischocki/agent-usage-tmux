@@ -22,6 +22,7 @@ update_tmux_option() {
 }
 
 main() {
+    tmux set-option -g status-interval 20
     update_tmux_option "status-right"
     update_tmux_option "status-left"
 }
