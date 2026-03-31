@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="160" viewBox="0 0 1100 160" role="img" aria-label="agent-usage-tmux preview placeholder">
+  <rect width="1100" height="160" fill="#111827"/>
+  <rect x="24" y="32" width="1052" height="96" rx="10" fill="#1f2937" stroke="#374151"/>
+  <text x="48" y="72" fill="#f59e0b" font-family="monospace" font-size="24">✻ 42% ████▍      03:02</text>
+  <text x="48" y="108" fill="#f9fafb" font-family="monospace" font-size="24">&gt;_ 88% █████▎    00:44</text>
+  <text x="790" y="108" fill="#9ca3af" font-family="monospace" font-size="16">Replace docs/preview.svg with a real screenshot</text>
+</svg>
