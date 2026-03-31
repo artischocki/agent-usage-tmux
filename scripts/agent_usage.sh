@@ -9,6 +9,13 @@ declare -A ICONS=(
     [codex]=">_"
 )
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+declare -A DEFAULTS=(
+    [claude]="python3 $SCRIPT_DIR/fetch_claude_usage.py"
+    [codex]="python3 $SCRIPT_DIR/fetch_codex_usage.py"
+)
+
 get_percentage() {
     local agent="$1"
     local cmd
@@ -17,11 +24,10 @@ get_percentage() {
         # fall back to legacy @agent_usage_cmd for claude
         [[ "$agent" == "claude" ]] && cmd="$(tmux show-option -gqv @agent_usage_cmd 2>/dev/null)"
     fi
-    if [[ -n "$cmd" ]]; then
-        eval "$cmd" 2>/dev/null
-    else
-        echo "0"
+    if [[ -z "$cmd" ]]; then
+        cmd="${DEFAULTS[$agent]}"
     fi
+    eval "$cmd" 2>/dev/null || echo "0"
 }
 
 render_bar() {
