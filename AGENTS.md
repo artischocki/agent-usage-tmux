@@ -22,7 +22,7 @@ When working in this repo, document any major concepts you introduce or discover
 - tqdm-style: `✻ 42% ████▍      03:02` - `█` for filled, spaces for empty, with a dim background on the unfilled portion
 - Sub-character precision using `▏▎▍▌▋▊▉` (1/8-cell steps via awk float math)
 - Claude: orange (`colour214`), icon `✻`
-- Codex: white (`colour255`), icon `>_`
+- Codex: soft light gray (`colour250`), icon `>_`
 
 ### Data source interface
 

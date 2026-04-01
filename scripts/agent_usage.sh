@@ -96,7 +96,7 @@ render_bar() {
     local color
     case "$agent" in
         claude) color="colour214" ;;  # orange
-        codex)  color="colour255" ;;  # white
+        codex)  color="colour250" ;;  # soft light gray
         *)
             if   (( pct >= 80 )); then color="colour160"
             elif (( pct >= 50 )); then color="colour214"
