@@ -58,19 +58,6 @@ That changes the display to:
 88% █████▎    00:44
 ```
 
-Legacy Claude-only fallbacks are also supported:
-
-```tmux
-set -g @agent_usage_cmd "python3 /path/to/custom_claude_percent.py"
-set -g @agent_usage_reset_cmd "python3 /path/to/custom_claude_reset.py"
-```
-
-Legacy icon toggle also works:
-
-```tmux
-set -g @agent_usage_disable_icons on
-```
-
 ## Development
 
 Useful local commands:
