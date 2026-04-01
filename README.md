@@ -24,7 +24,8 @@ Then reload tmux or install plugins with TPM.
 Current format:
 
 ```text
-✻ 42% ████▍  03:02, >_ 88% █████▎ 00:44
+✻ 42% ████▍      03:02
+>_ 88% █████▎    00:44
 ```
 
 ## Configuration
@@ -48,6 +49,13 @@ Hide the leading icons:
 
 ```tmux
 set -g @agent_usage_show_icons off
+```
+
+That changes the display to:
+
+```text
+42% ████▍      03:02
+88% █████▎    00:44
 ```
 
 Legacy Claude-only fallbacks are also supported:
