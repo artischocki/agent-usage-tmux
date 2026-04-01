@@ -31,8 +31,10 @@ The script reads a tmux option per agent:
 - `@agent_usage_cmd_codex` - shell command that prints 0-100
 - `@agent_usage_reset_cmd_claude` - shell command that prints seconds until reset
 - `@agent_usage_reset_cmd_codex` - shell command that prints seconds until reset
+- `@agent_usage_show_icons` - `on|off`, controls whether the combined multi-agent bar shows the leading agent icons
 - Falls back to `@agent_usage_cmd` (legacy) for claude if the above is unset
 - Falls back to `@agent_usage_reset_cmd` (legacy) for claude if the above is unset
+- Falls back to `@agent_usage_disable_icons` (legacy inverse toggle) if `@agent_usage_show_icons` is unset
 
 The frontend does **not** implement data fetching. Leave `scripts/fetch_*.py` and `scripts/claude_usage.sh` to the backend agent.
 

@@ -44,11 +44,23 @@ set -g @agent_usage_reset_cmd_claude "python3 /path/to/custom_claude_reset.py"
 set -g @agent_usage_reset_cmd_codex "python3 /path/to/custom_codex_reset.py"
 ```
 
+Hide the leading icons:
+
+```tmux
+set -g @agent_usage_show_icons off
+```
+
 Legacy Claude-only fallbacks are also supported:
 
 ```tmux
 set -g @agent_usage_cmd "python3 /path/to/custom_claude_percent.py"
 set -g @agent_usage_reset_cmd "python3 /path/to/custom_claude_reset.py"
+```
+
+Legacy icon toggle also works:
+
+```tmux
+set -g @agent_usage_disable_icons on
 ```
 
 ## Development

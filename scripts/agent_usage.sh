@@ -21,6 +21,23 @@ declare -A DEFAULT_RESETS=(
     [codex]="python3 $SCRIPT_DIR/fetch_codex_usage.py --field reset_in"
 )
 
+show_icons() {
+    local value
+    value="$(tmux show-option -gqv @agent_usage_show_icons 2>/dev/null)"
+    if [[ -z "$value" ]]; then
+        value="$(tmux show-option -gqv @agent_usage_disable_icons 2>/dev/null)"
+        case "$value" in
+            1|yes|true|on) return 1 ;;
+        esac
+        return 0
+    fi
+
+    case "$value" in
+        0|no|false|off) return 1 ;;
+    esac
+    return 0
+}
+
 get_percentage() {
     local agent="$1"
     local cmd
@@ -101,9 +118,13 @@ render_bar() {
     local bar_off=""
     for (( i=0; i<empty; i++ )); do bar_off+=" "; done
 
-    local icon="${ICONS[$agent]}"
-    printf "#[fg=%s,bold]%s %d%%#[default] #[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[default] #[fg=%s,bold]%s#[default]" \
-        "$color" "$icon" "$pct" "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off" "$color" "$reset_label"
+    local icon_prefix=""
+    if show_icons; then
+        icon_prefix="${ICONS[$agent]} "
+    fi
+
+    printf "#[fg=%s,bold]%s%d%%#[default] #[fg=%s,bg=%s]%s%s#[fg=%s,bg=%s]%s#[default] #[fg=%s,bold]%s#[default]" \
+        "$color" "$icon_prefix" "$pct" "$color" "$empty_bg" "$bar_on" "$partial" "$empty_bg" "$empty_bg" "$bar_off" "$color" "$reset_label"
 }
 
 render_agent() {
