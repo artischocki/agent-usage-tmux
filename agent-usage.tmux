@@ -8,13 +8,14 @@ count_usage_width() {
     local token
     local tail
 
-    for token in "#{agent_usage}" "#{claude_usage}" "#{codex_usage}"; do
+    for token in "#{agent_usage}" "#{claude_usage}" "#{codex_usage}" "#{kimi_usage}"; do
         tail="$string"
         while [[ "$tail" == *"$token"* ]]; do
             case "$token" in
-                "#{agent_usage}") total=$(( total + 28 )) ;;
+                "#{agent_usage}") total=$(( total + 42 )) ;;
                 "#{claude_usage}") total=$(( total + 13 )) ;;
                 "#{codex_usage}") total=$(( total + 14 )) ;;
+                "#{kimi_usage}") total=$(( total + 14 )) ;;
             esac
             tail="${tail#*"$token"}"
         done
@@ -28,6 +29,7 @@ do_interpolation() {
     # individual bars
     string="${string/\#\{claude_usage\}/#($CURRENT_DIR/scripts/agent_usage.sh claude)}"
     string="${string/\#\{codex_usage\}/#($CURRENT_DIR/scripts/agent_usage.sh codex)}"
+    string="${string/\#\{kimi_usage\}/#($CURRENT_DIR/scripts/agent_usage.sh kimi)}"
     # combined (backwards compat)
     string="${string/\#\{agent_usage\}/#($CURRENT_DIR/scripts/agent_usage.sh)}"
     echo "$string"
