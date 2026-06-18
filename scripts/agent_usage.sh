@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Usage: agent_usage.sh [claude|codex]
-# Defaults to showing both bars when no argument is given.
+# Usage: agent_usage.sh [claude|codex|kimi]
+# Defaults to showing all bars when no argument is given.
 
 AGENT="${1:-}"
 
 declare -A ICONS=(
     [claude]="✻"
     [codex]=">_"
+    [kimi]="K2"
 )
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -14,11 +15,13 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 declare -A DEFAULTS=(
     [claude]="python3 $SCRIPT_DIR/fetch_claude_usage.py"
     [codex]="python3 $SCRIPT_DIR/fetch_codex_usage.py"
+    [kimi]="python3 $SCRIPT_DIR/fetch_kimi_usage.py"
 )
 
 declare -A DEFAULT_RESETS=(
     [claude]="python3 $SCRIPT_DIR/fetch_claude_usage.py --field reset_in"
     [codex]="python3 $SCRIPT_DIR/fetch_codex_usage.py --field reset_in"
+    [kimi]="python3 $SCRIPT_DIR/fetch_kimi_usage.py --field reset_in"
 )
 
 show_icons() {
@@ -97,6 +100,7 @@ render_bar() {
     case "$agent" in
         claude) color="colour214" ;;  # orange
         codex)  color="colour250" ;;  # soft light gray
+        kimi)   color="colour81"  ;;  # cyan
         *)
             if   (( pct >= 80 )); then color="colour160"
             elif (( pct >= 50 )); then color="colour214"
@@ -139,10 +143,12 @@ render_agent() {
 }
 
 case "$AGENT" in
-    claude|codex) render_agent "$AGENT" ;;
+    claude|codex|kimi) render_agent "$AGENT" ;;
     *)
         render_agent "claude"
         printf " "
         render_agent "codex"
+        printf " "
+        render_agent "kimi"
         ;;
 esac
